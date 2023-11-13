@@ -61,14 +61,32 @@ router.post("/auth", async (req, res) => {
     return;
   }
 
-  res.send({
-    token: jwt.sign({ userId: user.userId }, process.env.ACCESS_TOKEN_SECRET, {
+  const token = jwt.sign(
+    { userId: user.userId },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
       expiresIn: "12h",
-    }),
+    }
+  );
+
+  //access token, Refresh Token ADD
+  res.header("Authorization", `Bearer ${token}`);
+
+  // token 값 전달 확인
+  res.send({
+    token: `Bearer ${token}`,
   });
 });
 
 const authMiddleware = require("../middlewares/auth-middleware.js");
-router.get("/users/me", authMiddleware, async (req, res) => {});
+router.get("/users/me", authMiddleware, async (req, res) => {
+  const { email, nickname } = res.locals.user;
+
+  return res.status(200).json({
+    code: 200,
+    message: "토큰이 정상입니다.",
+    data: { email, nickname },
+  });
+});
 
 module.exports = router;

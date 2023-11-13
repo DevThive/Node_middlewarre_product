@@ -5,7 +5,7 @@ const usersRouter = require("./routes/users.js");
 const port = 3000;
 
 //Sequelize connect
-const { sequelize } = require("./models/index");
+const { sequelize } = require("./models");
 // 다른 require문은 일단 생략
 const ConnectDB = async () => {
   try {
@@ -23,8 +23,8 @@ ConnectDB();
 app.use(express.json());
 
 // 웹사이트 디자인(프론트 구현)
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.static("assets"));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static("assets"));
 
 app.use("/api", [usersRouter]);
 

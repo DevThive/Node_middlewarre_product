@@ -8,6 +8,7 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.js")[env];
 const db = {};
+const mongoose = require("mongoose");
 
 let sequelize;
 if (config.use_env_variable) {
@@ -47,4 +48,14 @@ Object.keys(db).forEach((modelName) => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+db.User = require("./user")(sequelize, Sequelize);
+
 module.exports = db;
+
+//mongoose DB Connects
+
+// const MongoConnect = () => {
+//   mongoose
+//     .connect(process.env.MONGODB_IP)
+//     .then(() => console.log("mongodb 연결 성공"));
+// };
