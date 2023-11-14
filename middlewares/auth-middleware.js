@@ -19,7 +19,7 @@ module.exports = async (req, res, next) => {
   }
 
   try {
-    // 요청 헤더에 저장된 토큰(req.headers.authorization)과 비밀키를 사용하여 토큰을 req.decoded에 반환
+    // 요청 헤더에 저장된 토큰(req.headers.authorization)과 비밀키
     const { userId } = jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET);
     Users.findByPk(userId).then((user) => {
       res.locals.user = user;

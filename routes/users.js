@@ -5,8 +5,13 @@ const { Op } = require("sequelize");
 const { Users } = require("../models");
 const jwt = require("jsonwebtoken");
 
+//비밀번호 암호화
+const bcrypt = require("bcryptjs");
+
 router.post("/users", async (req, res) => {
   const { email, nickname, password, confirmPassword } = req.body;
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
   let regEmail = /^([0-9a-zA-Z_\.-]+)@([0-9a-zA-Z_-]+)(\.[0-9a-zA-Z_-]+){1,2}$/;
   let pwRef = /^[a-zA-z0-9]{6,12}$/;
 
@@ -26,7 +31,11 @@ router.post("/users", async (req, res) => {
   if (!existsUsers.length) {
     if (regEmail.test(email)) {
       if (pwRef.test(password)) {
-        await Users.create({ email, nickname, password });
+        await Users.create({
+          email: email,
+          nickname: nickname,
+          password: hash,
+        });
         res.status(201).send({ result: `${email}, ${nickname}` });
       } else {
         res
@@ -54,7 +63,8 @@ router.post("/auth", async (req, res) => {
     },
   });
 
-  if (!user || password !== user.password) {
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!isPasswordCorrect) {
     res
       .status(400)
       .send({ errorMessage: "이메일 또는 패스워드를 확인해주세요!" });

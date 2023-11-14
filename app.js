@@ -1,8 +1,14 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const usersRouter = require("./routes/users.js");
+const productRouter = require("./routes/products.js");
 
-const port = 3000;
+const port = process.env.PORT;
+
+//mongoose connect
+const connect = require("./mongodb");
+connect();
 
 //Sequelize connect
 const { sequelize } = require("./models");
@@ -23,10 +29,10 @@ ConnectDB();
 app.use(express.json());
 
 // 웹사이트 디자인(프론트 구현)
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static("assets"));
+// app.use(express.urlencoded({ extended: false }));
+// app.use(express.static("assets"));
 
-app.use("/api", [usersRouter]);
+app.use("/api", [usersRouter, productRouter]);
 
 app.get("/", (req, res) => {
   res.send("hello");
