@@ -9,11 +9,31 @@ const authMiddleware = require("../middlewares/auth-middleware.js");
 
 //모든 상품 조회
 router.get("/products", async (req, res) => {
-  const products = await Products.find({});
+  const sort =
+    req.query.sort && req.query.sort.toLowerCase() === "asc" ? -1 : 1;
+
+  const products = await Products.find({}).sort({ date: sort });
   res.send(products);
 });
 // 상품 상세 조회
-router.get("/product/:productId", (req, res) => {});
+router.get("/product/:productId", async (req, res) => {
+  const { productId } = req.params;
+
+  const product = await Products.findOne({ Product_id: productId }).select(
+    "Product_id Product_name Product_desc User_name State"
+  );
+
+  try {
+    if (!product) {
+      res.status(400).send({ errorMessage: "상품 조회에 실패하였습니다." });
+      return;
+    }
+    res.status(200).send(product);
+  } catch (error) {
+    console.log("Eror :", error);
+    res.status(500).send({ errorMessage: "sever Error" });
+  }
+});
 
 // 상품 생성 (인증 미들웨어 사용)
 router.post("/product", authMiddleware, async (req, res) => {
@@ -22,32 +42,35 @@ router.post("/product", authMiddleware, async (req, res) => {
 
   const product = Products.findOne({ Product_name });
   let idCounter = await IdCounter.findOne({ model: "product9" });
-  if (product.length) {
-    res.status(400).send({ errorMessage: "상품이 이미 존재합니다." });
+
+  try {
+    if (product) {
+      res.status(400).send({ errorMessage: "상품이 이미 존재합니다." });
+    }
+
+    if (!idCounter) {
+      // 처음 등록할 경우 counter 생성
+      await IdCounter.create({ model: "product9", count: 1 });
+      console.log("test");
+    } else {
+      // 이미 있다면 counter 증가
+      idCounter.count++;
+      await idCounter.save();
+    }
+    idCounter = await IdCounter.findOne({ model: "product9" });
+    const productsId = idCounter.count;
+
+    const createProduct = await Products.create({
+      Product_id: productsId,
+      Product_name: Product_name,
+      Product_desc: Product_desc,
+      User_name: email,
+    });
+
+    res.status(200).send({ products: createProduct, Message: "save Success" });
+  } catch (error) {
+    console.log(error);
   }
-
-  if (!idCounter) {
-    // 처음 등록할 경우 counter 생성
-    await IdCounter.create({ model: "product9", count: 1 });
-    console.log("test");
-  } else {
-    // 이미 있다면 counter 증가
-    idCounter.count++;
-    await idCounter.save();
-  }
-  idCounter = await IdCounter.findOne({ model: "product9" });
-  const productsId = idCounter.count;
-
-  const createProduct = await Products.create({
-    Product_id: productsId,
-    Product_name: Product_name,
-    Product_desc: Product_desc,
-    User_name: email,
-  });
-
-  res.status(200).send({ products: createProduct, Message: "save Success" });
-
-  //console.log(error);
 });
 
 router.delete("/product/:productId", authMiddleware, async (req, res) => {
