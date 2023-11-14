@@ -9,8 +9,8 @@ module.exports = async (req, res, next) => {
   const [authType, authToken] = (authorization ?? "").split(" ");
 
   console.log(authorization);
-  // 인증 완료
 
+  // 인증 완료
   if (!authToken || authType !== "Bearer") {
     res.status(401).send({
       errorMessage: "로그인 후 이용 가능한 기능입니다.",
