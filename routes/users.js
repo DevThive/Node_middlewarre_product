@@ -15,6 +15,12 @@ router.post("/users", async (req, res) => {
   let regEmail = /^([0-9a-zA-Z_\.-]+)@([0-9a-zA-Z_-]+)(\.[0-9a-zA-Z_-]+){1,2}$/;
   let pwRef = /^[a-zA-z0-9]{6,12}$/;
 
+  const existsUsers = await Users.findAll({
+    where: {
+      [Op.or]: [{ email }, { nickname }],
+    },
+  });
+
   if (password !== confirmPassword) {
     res.status(400).send({
       errorMessage: "패스워드가 일치하지 않습니다.",
@@ -22,35 +28,33 @@ router.post("/users", async (req, res) => {
     return false;
   }
 
-  const existsUsers = await Users.findAll({
-    where: {
-      [Op.or]: [{ email }, { nickname }],
-    },
-  });
+  if (!regEmail.test(email)) {
+    res.status(400).send({ errorMessage: "Email 형식을 확인해주세요." });
+    return;
+  }
 
-  if (!existsUsers.length) {
-    if (regEmail.test(email)) {
-      if (pwRef.test(password)) {
-        await Users.create({
-          email: email,
-          nickname: nickname,
-          password: hash,
-        });
-        res.status(201).send({ result: `${email}, ${nickname}` });
-      } else {
-        res
-          .status(400)
-          .send({ errorMessage: "비밀번호는 6자리 이상 입력해주세요." });
-      }
-    } else {
-      res.status(400).send({ errorMessage: "이메일 형식을 확인해주세요" });
-      return;
-    }
-  } else {
+  if (!pwRef.test(password)) {
+    res.status(400).send({ errorMessage: "Password 형식을 확인해주세요." });
+    return;
+  }
+
+  if (existsUsers.length) {
     res
       .status(400)
-      .send({ errorMessage: "이메일 또는 닉네임이 이미 사용중입니다." });
+      .send({ errorMessage: "이메일 또는 닉네임이 사용중입니다. " });
     return;
+  }
+
+  try {
+    await Users.create({
+      email: email,
+      nickname: nickname,
+      password: hash,
+    });
+    res.status(201).send({ result: `${email}, ${nickname}` });
+  } catch (error) {
+    console.log(error);
+    res.status(401).send({ errorMessage: error });
   }
 });
 

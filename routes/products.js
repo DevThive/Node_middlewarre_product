@@ -70,6 +70,7 @@ router.post("/product", authMiddleware, async (req, res) => {
     res.status(200).send({ products: createProduct, Message: "save Success" });
   } catch (error) {
     console.log(error);
+    res.status(400).send({ errorMessage: error });
   }
 });
 
@@ -79,19 +80,25 @@ router.delete("/product/:productId", authMiddleware, async (req, res) => {
 
   const product = await Products.findOne({ Product_id: productId });
 
-  if (!product) {
-    res.status(401).send({ errorMessage: "상품이 존재하는지 확인해주세요" });
-    return;
-  }
+  try {
+    if (!product) {
+      res.status(401).send({ errorMessage: "상품이 존재하는지 확인해주세요" });
+      return;
+    }
 
-  if (product.User_name !== email) {
-    res
-      .status(401)
-      .send({ errorMessage: "본인이 작성한 글만 삭제가 가능합니다." });
-  }
+    if (product.User_name !== email) {
+      res
+        .status(401)
+        .send({ errorMessage: "본인이 작성한 글만 삭제가 가능합니다." });
+      return;
+    }
 
-  await Products.deleteOne({ Product_id: productId });
-  res.status(200).send({ Message: "삭제 되었습니다." });
+    await Products.deleteOne({ Product_id: productId });
+    res.status(200).send({ Message: "삭제 되었습니다." });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ errorMessage: error });
+  }
 });
 
 //상품 수정 (인증 미들웨어 사용)
@@ -104,30 +111,36 @@ router.put("/product/:productId", authMiddleware, async (req, res) => {
 
   const product = await Products.findOne({ Product_id: productId });
 
-  if (!product) {
-    res.status(401).send({ errorMessage: "상품이 존재하는지 확인해주세요." });
-    return;
-  }
-
-  if (product.User_name !== email) {
-    res
-      .status(401)
-      .send({ errorMessage: "본인이 작성한 글만 삭제가 가능합니다." });
-  }
-
-  await Products.updateOne(
-    { Product_id: productId },
-    {
-      $set: {
-        Product_name: Product_name,
-        Product_desc: Product_desc,
-        State: State,
-      },
+  try {
+    if (!product) {
+      res.status(401).send({ errorMessage: "상품이 존재하는지 확인해주세요." });
+      return;
     }
-  );
 
-  const productResult = await Products.findOne({ Product_id: productId });
+    if (product.User_name !== email) {
+      res
+        .status(401)
+        .send({ errorMessage: "본인이 작성한 글만 삭제가 가능합니다." });
+      return;
+    }
 
-  res.status(200).send({ productResult });
+    await Products.updateOne(
+      { Product_id: productId },
+      {
+        $set: {
+          Product_name: Product_name,
+          Product_desc: Product_desc,
+          State: State,
+        },
+      }
+    );
+
+    const productResult = await Products.findOne({ Product_id: productId });
+
+    res.status(200).send({ productResult });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({ errorMessage: error });
+  }
 });
 module.exports = router;
