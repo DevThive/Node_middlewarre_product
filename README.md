@@ -14,7 +14,7 @@
 - ACCESS-TOKEN_SECRET
 
 # API 명세서 URL
-
+https://docs.google.com/spreadsheets/d/13qBM1g-FM_Q930iK4JdLqkp21DvUJSoenUPeTh85Yno/edit?usp=sharing
 - 구글 Docs 공유 URL 추가
 
 # ERD URL
