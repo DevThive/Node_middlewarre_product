@@ -21,6 +21,9 @@ https://docs.google.com/spreadsheets/d/13qBM1g-FM_Q930iK4JdLqkp21DvUJSoenUPeTh85
 https://www.erdcloud.com/d/eHMrK2CjF7hicErx5
 - ERD Cloud URL 추가
 
+# 상품 부분 데이터 베이스 Sequelize로 변경하여 사용한 작업
+https://github.com/DevThive/Use_Sequelize
+
 # 더 고민해 보기
 
 1. **암호화 방식**
